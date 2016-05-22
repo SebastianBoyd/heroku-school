@@ -31,7 +31,7 @@ def get_raw_data(username, password):
         return html
 
 def get_grades(username, password):
-    # html = open('test.html', 'r').read()
+    #html = open('test.html', 'r').read()
     html = get_raw_data(username, password)
 
     html = html.decode('utf8', 'ignore')
@@ -40,6 +40,7 @@ def get_grades(username, password):
     classes_list = []
     for classroom_soup in soup.find_all("div", { "class" : "AssignmentClass"}):
         class_title = classroom_soup.find_all("div", class_="sg-header sg-header-square")[0].find_all("a")[0].string.strip()
+        class_title = re.sub(r'[0-9]{1,5} - [0-9]{1,2} ', ' ', class_title).strip()
         assignment_list = []
         try:
             for tr in classroom_soup.find("table", class_="sg-asp-table").find_all("tr", class_="sg-asp-table-data-row"):
