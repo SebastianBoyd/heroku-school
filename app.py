@@ -41,6 +41,7 @@ def get_grades(username, password):
     for classroom_soup in soup.find_all("div", { "class" : "AssignmentClass"}):
         class_title = classroom_soup.find_all("div", class_="sg-header sg-header-square")[0].find_all("a")[0].string.strip()
         class_title = re.sub(r'[0-9]{1,5} - [0-9]{1,2} ', ' ', class_title).strip()
+        url = urllib.quote_plus(class_title.replace (" ", "_").lower())
         assignment_list = []
         try:
             for tr in classroom_soup.find("table", class_="sg-asp-table").find_all("tr", class_="sg-asp-table-data-row"):
@@ -78,7 +79,9 @@ def get_grades(username, password):
             grade_letter = p.search(grade_str).group(1)
         except:
             grade_letter = ''
-        classes_list.append({'assignments':assignment_list, 'title':class_title, 'grade_table':grade_list, 'grade_percent':grade_percent, 'grade_letter':grade_letter})
+        classes_list.append({'assignments':assignment_list, 'title':class_title,
+                             'grade_table':grade_list, 'grade_percent':grade_percent,
+                             'grade_letter':grade_letter, 'url':url})
     response = {'classes': classes_list}
     return json.dumps(response)
 
