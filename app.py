@@ -8,6 +8,7 @@ import urllib2
 import re
 from bs4 import BeautifulSoup
 import json
+import decimal
 
 app = Flask(__name__)
 app.config.update(
@@ -17,6 +18,26 @@ app.config.update(
 cors = CORS(app)
 Compress(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
+
+def format_num(num):
+    try:
+        dec = decimal.Decimal(num)
+    except:
+        return 'uh_oh'
+    tup = dec.as_tuple()
+    delta = len(tup.digits) + tup.exponent
+    digits = ''.join(str(d) for d in tup.digits)
+    if delta <= 0:
+        zeros = abs(tup.exponent) - len(tup.digits)
+        val = '0.' + ('0'*zeros) + digits
+    else:
+        val = digits[:delta] + ('0'*tup.exponent) + '.' + digits[delta:]
+    val = val.rstrip('0')
+    if val[-1] == '.':
+        val = val[:-1]
+    if tup.sign:
+        return '-' + val
+    return val
 
 def get_raw_data(username, password):
         cj = cookielib.CookieJar()
@@ -50,8 +71,8 @@ def get_grades(username, password):
                 assigned = td[1].string
                 assigment_title = td[2].find_all("a")[0].string.strip()
                 assignment_category = td[3].string.strip()
-                score_my = td[4].string.strip()
-                score_total = td[5].string.strip()
+                score_my = format_num(td[4].string.strip())
+                score_total = format_num(td[5].string.strip())
                 assignment = {'title':assigment_title, 'category':assignment_category,
                                                 'date_assigned':assigned, 'date_due':due,
                                                 'score':score_my, 'max_score':score_total}
@@ -74,7 +95,7 @@ def get_grades(username, password):
             grade_list.append(grade)
         grade_str = classroom_soup.find("span", id=re.compile("plnMain_rptAssigmnetsByCourse_lblOverallAverage_\d")).string
         p = re.compile(r'\(([^\)]+)\)')
-        grade_percent = re.sub(r'\([^)]*\)', '', grade_str).strip()
+        grade_percent = format_num(re.sub(r'\([^)]*\)', '', grade_str).strip())
         try:
             grade_letter = p.search(grade_str).group(1)
         except:
