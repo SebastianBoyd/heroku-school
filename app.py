@@ -23,7 +23,7 @@ def format_num(num):
     try:
         dec = decimal.Decimal(num)
     except:
-        return 'uh_oh'
+        return num #need to fix
     tup = dec.as_tuple()
     delta = len(tup.digits) + tup.exponent
     digits = ''.join(str(d) for d in tup.digits)
